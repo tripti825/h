@@ -142,6 +142,9 @@ class GroupSearchController(SearchController):
                                           pubid=self.group.pubid,
                                           slug=self.group.slug),
             'members': members,
+            # only show the logo and authority on the side bar if the authority is not the default
+            'authority': None if self.request.authority == self.group.authority else self.group.authority,
+            'logo': self.group.logo,
         }
 
         if self.request.has_permission('admin', self.group):
