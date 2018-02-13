@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import mock
 from mock import PropertyMock
 import pytest
 
@@ -24,17 +25,25 @@ class TestNavbar(object):
         req.user = user
         result = navbar({}, req)
 
+        # we are not showing open groups in sidebar drop down for now
+        # as it has the potential to over clutter the options
         assert result['groups_menu_items'] == [
             {'title': g.name, 'link': 'http://example.com/groups/' + g.pubid + '/' + g.slug}
             for g in user.groups
         ]
 
-    def test_includes_groups_suggestions_when_logged_in(self, req, user):
+    def test_includes_open_groups_suggestions_when_logged_out(self, req, user, factories, open_group):
+        req.user = factories.User()
+        result = navbar({}, req)
+
+        assert result['groups_suggestions'] == [{'name': open_group.name, 'pubid': open_group.pubid}]
+
+    def test_includes_groups_suggestions_when_logged_in(self, req, user, open_group):
         req.user = user
         result = navbar({}, req)
 
         assert result['groups_suggestions'] == [{'name': g.name, 'pubid': g.pubid}
-                                                for g in user.groups]
+                                                for g in ([open_group] + user.groups)]
 
     def test_username_url_when_logged_in(self, req, user):
         req.user = user
@@ -72,7 +81,7 @@ class TestNavbar(object):
         assert result['search_url'] == 'http://example.com/search'
 
     @pytest.fixture
-    def routes(self, pyramid_config):
+    def routes(self, pyramid_config, open_group):
         pyramid_config.add_route('account', '/account')
         pyramid_config.add_route('account_profile', '/account/profile')
         pyramid_config.add_route('account_notifications', '/account/notifications')
@@ -82,6 +91,13 @@ class TestNavbar(object):
         pyramid_config.add_route('group_create', '/groups/new')
         pyramid_config.add_route('group_read', '/groups/:pubid/:slug')
         pyramid_config.add_route('logout', '/logout')
+        service = mock.Mock(spec_set=['public_groups'])
+        service.public_groups.return_value = [open_group]
+        pyramid_config.register_service(service, name='authority_group')
+
+    @pytest.fixture
+    def open_group(self, factories):
+        return factories.OpenGroup()
 
     @pytest.fixture
     def user(self, factories):

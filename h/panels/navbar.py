@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from pyramid_layout.panel import panel_config
 
 from h.i18n import TranslationString as _  # noqa
+from h.services.profile_group import profile_groups_factory
 
 
 @panel_config(name='navbar', renderer='h:templates/panels/navbar.html.jinja2')
@@ -29,14 +30,20 @@ def navbar(context, request, search=None, opts=None):
                 'title': group.name,
                 'link': request.route_url('group_read', pubid=group.pubid, slug=group.slug)
             })
-            groups_suggestions.append({
-                'name': group.name,
-                'pubid': group.pubid
-            })
         user_activity_url = request.route_url('activity.user_search',
                                               username=request.user.username)
         username = request.user.username
 
+    # make all groups visible in the search auto complete
+    groups = profile_groups_factory(None, request).all(request.user, request.authority)
+    for group in groups:
+        # don't return __world__ group
+        if group['id'] == '__world__':
+            continue
+        groups_suggestions.append({
+            'name': group['name'],
+            'pubid': group['id']
+        })
     route = request.matched_route
 
     if route and route.name in ['group_read', 'activity.user_search']:
