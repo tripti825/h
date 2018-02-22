@@ -184,8 +184,7 @@
     {% if authority %}
       <p> 
         {% if logo %}
-         {# add another css class -font-size: <something>px; #} 
-         {{ svg_icon(logo, css_class='h-group-logo') }} 
+         {{ svg_icon(logo, 'search-result-sidebar__group-logo') }} 
          
         {% endif %}
         {{ authority }}
