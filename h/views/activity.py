@@ -24,6 +24,10 @@ from h.views.groups import check_slug
 PAGE_SIZE = 200
 
 
+def _format_date(date):
+    return "{d:%B} {d.day}, {d:%Y}".format(d=date)
+
+
 @view_defaults(route_name='activity.search',
                renderer='h:templates/activity/search.html.jinja2')
 class SearchController(object):
@@ -154,7 +158,7 @@ class GroupSearchController(SearchController):
             'annotation_count': group_annotation_count,
         }
         result['group'] = {
-            'created': self.group.created.strftime('%B, %Y'),
+            'created': _format_date(self.group.created),
             'description': self.group.description,
             'name': self.group.name,
             'pubid': self.group.pubid,
@@ -321,7 +325,7 @@ class UserSearchController(SearchController):
         result['user'] = {
             'name': self.user.display_name or self.user.username,
             'description': self.user.description,
-            'registered_date': self.user.registered_date.strftime('%B, %Y'),
+            'registered_date': _format_date(self.user.registered_date),
             'location': self.user.location,
             'uri': self.user.uri,
             'domain': domain(self.user),
