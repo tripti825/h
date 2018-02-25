@@ -551,7 +551,7 @@ class TestGroupSearchController(object):
                                                                       test_user,
                                                                       pyramid_request):
         result = controller.search()['stats']
-        assert result['annotation_count'] == 5
+        assert result['annotation_count'] == '5'
 
     @pytest.mark.parametrize('q,test_group', [('', 'open_group'), ('   ', 'group')], indirect=['test_group'])
     def test_leave_removes_empty_query_from_url(self,
@@ -794,7 +794,7 @@ class TestUserSearchController(object):
 
         stats = controller.search()['stats']
 
-        assert stats['annotation_count'] == 6
+        assert stats['annotation_count'] == '6'
 
     def test_search_passes_public_annotation_counts_to_the_template(self,
                                                                     controller,
@@ -810,7 +810,7 @@ class TestUserSearchController(object):
 
         stats = controller.search()['stats']
 
-        assert stats['annotation_count'] == 1
+        assert stats['annotation_count'] == '1'
 
     def test_search_passes_the_other_user_details_to_the_template(self,
                                                                   controller,

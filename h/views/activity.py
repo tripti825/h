@@ -24,6 +24,10 @@ from h.views.groups import check_slug
 PAGE_SIZE = 200
 
 
+def _format_count(count):
+    return "{:,}".format(count)
+
+
 @view_defaults(route_name='activity.search',
                renderer='h:templates/activity/search.html.jinja2')
 class SearchController(object):
@@ -151,7 +155,7 @@ class GroupSearchController(SearchController):
         group_annotation_count = self.request.find_service(name='annotation_stats').group_annotation_count(self.group.pubid)
 
         result['stats'] = {
-            'annotation_count': group_annotation_count,
+            'annotation_count': _format_count(group_annotation_count),
         }
         result['group'] = {
             'created': self.group.created.strftime('%B, %Y'),
@@ -315,7 +319,7 @@ class UserSearchController(SearchController):
             annotation_count = user_annotation_counts['total']
 
         result['stats'] = {
-            'annotation_count': annotation_count,
+            'annotation_count': _format_count(annotation_count),
         }
 
         result['user'] = {
