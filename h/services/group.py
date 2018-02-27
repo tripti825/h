@@ -6,7 +6,7 @@ import sqlalchemy as sa
 
 from h import session
 from h.models import Group, GroupScope, User
-from h.models.group import ReadableBy, OPEN_GROUP_TYPE_FLAGS, PRIVATE_GROUP_TYPE_FLAGS
+from h.models.group import ReadableBy, OPEN_GROUP_TYPE_FLAGS, PRIVATE_GROUP_TYPE_FLAGS, RESTRICTED_GROUP_TYPE_FLAGS
 
 
 class GroupService(object):
@@ -68,6 +68,33 @@ class GroupService(object):
                             type_flags=OPEN_GROUP_TYPE_FLAGS,
                             scopes=[GroupScope(origin=o) for o in origins],
                             )
+
+    def create_restricted_group(self, name, userid, origins, description=None):
+        """
+        Create a new restricted group.
+
+        A restricted group is one that anyone in the same authority can read but
+        only members can write.
+
+        :param name: the human-readable name of the group
+        :param userid: the userid of the group creator
+        :param description: the description of the group
+
+        :returns: the created group
+        """
+        group = self._create(name=name,
+                             userid=userid,
+                             description=description,
+                             type_flags=RESTRICTED_GROUP_TYPE_FLAGS,
+                             scopes=[GroupScope(origin=o) for o in origins],
+                             )
+        group.members.append(group.creator)
+
+        # Flush the DB to generate group.pubid before publish()ing it.
+        self.session.flush()
+
+        self.publish('group-join', group.pubid, group.creator.userid)
+        return group
 
     def member_join(self, group, userid):
         """Add `userid` to the member list of `group`."""
